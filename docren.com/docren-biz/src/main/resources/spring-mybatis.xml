@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+	   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--公共配置-->
+
+
+    <bean id="baseDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="removeAbandonedOnBorrow" value="true"/>
+        <property name="removeAbandonedOnMaintenance" value="true"/>
+        <property name="removeAbandonedTimeout" value="20"/>
+        <property name="maxTotal" value="150"/>
+        <property name="maxIdle" value="30"/>
+        <property name="maxWaitMillis" value="10000"/>
+    </bean>
+
+    <bean id="medicenDataSourceSlave" parent="baseDataSource">
+        <property name="url" value="${jdbc.medicen.read.url}"/>
+        <property name="username" value="${jdbc.medicen.read.username}"/>
+        <property name="password" value="${jdbc.medicen.read.password}"/>
+    </bean>
+    <bean id="medicenDataSourceMaster" parent="baseDataSource">
+        <property name="url" value="${jdbc.medicen.write.url}"/>
+        <property name="username" value="${jdbc.medicen.write.username}"/>
+        <property name="password" value="${jdbc.medicen.write.password}"/>
+    </bean>
+
+
+    <!--动态路由分库-->
+    <bean id="medicenDataSource" class="docren.com.biz.annotations.DynamicDataSource">
+        <property name="targetDataSources">
+            <map key-type="java.lang.String">
+                <entry key="Medicen_SLAVE" value-ref="medicenDataSourceSlave"/>
+                <entry key="Medicen_MASTER" value-ref="medicenDataSourceMaster"/>
+            </map>
+        </property>
+        <property name="defaultTargetDataSource" ref="medicenDataSourceMaster"/>
+    </bean>
+
+    <bean id="baseSqlSessionFactory" name="baseSqlSessionFactory"
+          class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="medicenDataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="docren.com.biz.dao.docren" />
+        <property name="sqlSessionFactoryBeanName" value="baseSqlSessionFactory" />
+        <property name="annotationClass" value="org.springframework.stereotype.Repository" />
+    </bean>
+
+    <bean id="MedicenManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="medicenDataSource"/>
+    </bean>
+
+    <!--配置事务方式-->
+    <tx:annotation-driven transaction-manager="MedicenManager" />
+
+</beans>

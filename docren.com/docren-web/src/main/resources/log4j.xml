@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE log4j:configuration PUBLIC "-//log4j/log4j Configuration//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">-->
+
+<!DOCTYPE log4j:configuration SYSTEM "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
+<log4j:configuration debug="true">
+
+    <appender name="consoleLog" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c{1}:%L - %m%n" />
+        </layout>
+    </appender>
+
+    <!--用于记录普通日志，debug用 -->
+    <appender name="debugLog" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${log.dir}/debug.log"/>
+        <param name="append" value="true"/>
+        <param name="Threshold" value="DEBUG"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d (%-4r ms) %-5p [%t] %c %x: %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="DEBUG" />
+            <param name="LevelMax" value="DEBUG" />
+        </filter>
+    </appender>
+
+    <!--普通日志-->
+    <appender name="infoLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log.dir}/info.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="DatePattern" value="'_'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c-%l] %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="INFO" />
+            <param name="LevelMax" value="INFO" />
+        </filter>
+    </appender>
+
+    <!--警告日志-->
+    <appender name="warnLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log.dir}/warn.log" />
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="WARN"/>
+        <param name="DatePattern" value="'_'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN" />
+            <param name="LevelMax" value="WARN" />
+        </filter>
+    </appender>
+
+    <!--错误日志-->
+    <appender name="errorLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
+        <param name="File" value="${log.dir}/error.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="ERROR"/>
+        <param name="DatePattern" value="'_'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c-%l] %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ERROR" />
+            <param name="LevelMax" value="FATAL" />
+        </filter>
+    </appender>
+
+
+
+    <!--sql日志 HH -->
+    <appender name="reportSqlLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log.dir}/sql.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="DatePattern" value="'_'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n" />
+        </layout>
+    </appender>
+
+
+
+    <!--接口访问日志 HH -->
+    <appender name="httpRequestLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log.dir}/httpRequest.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="DatePattern" value="'_'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n" />
+        </layout>
+    </appender>
+
+
+
+    <!--接口日志-->
+    <logger name="httpRequestLogger" additivity="false">
+        <appender-ref ref="httpRequestLog"/>
+    </logger>
+
+    <!--dao debug-->
+    <logger name="apc.dubbo.mypharma.bizService.act.dao" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="debugLog"/>
+    </logger>
+
+
+    <logger name="com.ibatis" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.Connection" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.Statement" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.PreparedStatement" additivity="true">
+        <level value="DEBUG" />
+        <appender-ref ref="debugLog" />
+    </logger>
+    <logger name="java.sql.ResultSet" additivity="true">
+        <level value="DEBUG" />
+        <appender-ref ref="debugLog" />
+    </logger>
+
+    <root>
+        <priority value="INFO" />
+        <appender-ref ref="infoLog" />
+        <appender-ref ref="warnLog" />
+        <appender-ref ref="errorLog" />
+        <appender-ref ref="debugLog"/>
+        <appender-ref ref="consoleLog"/>
+    </root>
+
+</log4j:configuration>
