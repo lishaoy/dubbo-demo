@@ -1,2 +1,0 @@
-# docren.com
-docren.com
